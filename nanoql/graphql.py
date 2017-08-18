@@ -8,6 +8,7 @@ the resolver will not return implicit objects, bc/ it is meant to send JSON.
 # TODO: http://docs.graphene-python.org/en/latest/types/mutations/
 
 
+import json
 import graphene
 import requests
 # https://github.com/graphql-python/graphene/blob/master/examples/simple_example.py
@@ -16,38 +17,9 @@ import requests
 # - http://nafiulis.me/graphql-in-the-python-world.html
 
 
-class Sequence(graphene.ObjectType):
-    uid = graphene.List(graphene.String)  # ...(description='A typical hello world')
-    seq = graphene.List(graphene.String)
-
-
-def resolve_sequence(self, args, context, info):
-    print('We want to query', context['db'] + '.')
-    # resolver can be external and then passed to field
-    # http://docs.graphene-python.org/en/latest/types/objecttypes/
-    url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi'
-    params = {
-        'db': 'nuccore',
-        'id': args['uid'],  # 'KC790373'
-        'rettype': 'fasta',
-        'retmode': 'text',
-        'retmax': args['max']}
-    result = requests.get(url, params)
-    # result = 'ACTAGATACATACATACTACAA'  # for testing
-
-    from Bio import SeqIO
-    from io import StringIO
-
-    records = [str(r.seq)[:10] for r in SeqIO.parse(
-        StringIO(result.text), format='fasta')]
-    # seq.format('fasta')
-
-    # we could now turn this result into biopython sequence objects
-    return Sequence(uid=args['uid'], seq=records) # result.text
-
-
 class Query(graphene.ObjectType):
-
+    from nanoql.objects import Sequence
+    from nanoql.resolver import resolve_sequence
     #  GraphQL fields are designed to be stand-alone functions. --
     # http://docs.graphene-python.org/en/latest/execution/dataloader/
     sequence = graphene.Field(
@@ -91,3 +63,8 @@ print(json.dumps(dict(e.data['sequence']), indent=2))
 # as a nice use case
 # another use case: get
 
+
+
+- reads
+- assembly
+- annotation
