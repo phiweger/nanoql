@@ -7,5 +7,5 @@ class Sequence(graphene.ObjectType):
 class Taxon(graphene.ObjectType):
     uid = graphene.String()
     name = graphene.String()
-    # parent = graphene.String()
-    # children = graphene.List(graphene.String)
+    parent = graphene.String()
+    children = graphene.List(graphene.Int)

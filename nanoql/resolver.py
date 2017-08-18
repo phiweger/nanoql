@@ -1,3 +1,6 @@
+# TODO: separate the requests routines from the resolver. the latter should just choose
+# one based on the context
+
 def resolve_sequence(self, args, context, info):
     from io import StringIO
     import requests
@@ -29,7 +32,7 @@ def resolve_taxon(self, args, context, info):
     from io import StringIO
     import requests
     from Bio import SeqIO
-    import untangle
+    import xmltodict
     from nanoql.objects import Taxon
     from nanoql.utils import url_base, url_append, sanitize_keys, camel_to_snake
 
@@ -39,8 +42,16 @@ def resolve_taxon(self, args, context, info):
     params = {'display': 'xml'}
     url = url_base('taxon') + url_append(params, prefix=args['name'])
     result = requests.get(url).text
-    obj = untangle.parse(result)
+    d = xmltodict.parse(result)
 
     return Taxon(
-        uid=obj.ROOT.taxon['taxId'],
-        name=obj.ROOT.taxon['scientificName'])
+        uid=d['ROOT']['taxon']['@taxId'],
+        name=d['ROOT']['taxon']['@scientificName'],
+        parent=d['ROOT']['taxon']['@parentTaxId'],
+        children=[i['@taxId'] for i in d['ROOT']['taxon']['children']['taxon']])
+
+# obj.ROOT.taxon.__dict__.keys()
+# q.ROOT.taxon.children == q.ROOT.taxon.__dict__['children']
+# q.ROOT.taxon.lineage.__dict__
+# q.ROOT.taxon.synonym.__dict__
+# q.ROOT.taxon.children.__dict__

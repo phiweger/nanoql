@@ -48,9 +48,10 @@ class Query(graphene.ObjectType):
         name=graphene.String(),
         resolver=resolve_taxon)
 
-schema = graphene.Schema(query=Query)
-params = {'keys': ["KC790375", "KC790376", "KC790377", "KC790378"]}
 
+schema = graphene.Schema(query=Query)
+
+params = {'keys': ["KC790375", "KC790376", "KC790377", "KC790378"]}
 query = '''
     query ($keys: [String]) {
       sequence(uid: $keys, max: 5) {
@@ -79,9 +80,23 @@ query = '''
         uid
         name
         parent
-        children
       }
     }
 '''
 e = schema.execute(query, context_value={'db': 'genbank'})
 e.data, e.errors, e.invalid
+
+# TODO:
+# pass result of one query to the next, e.g.
+query = '''
+    query {
+      taxon(name: "pseudomonas aeruginosa") {
+        sequence(accession: uid) {
+            accession
+            seq
+        }
+        name
+        parent
+      }
+    }
+'''
