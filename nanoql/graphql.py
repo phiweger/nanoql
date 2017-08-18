@@ -99,10 +99,12 @@ e.data, e.errors, e.invalid
 
 # TODO:
 # pass result of one query to the next, e.g.
+schema = graphene.Schema(query=Query)
 query = '''
     query {
       taxon(name: "pseudomonas aeruginosa") {
-        sequence(uid: uid) {
+        sequence(uid: "KC790375") {
+            uid
             seq
         }
         name
@@ -113,3 +115,50 @@ query = '''
 e = schema.execute(query, context_value={'db': 'genbank'})
 e.data, e.errors, e.invalid
 # graphql.error.base.GraphQLError('Cannot query field "sequence" on type "Taxon".')
+
+
+# TODO: pass one argument to the next nesting
+query = '''
+    query {
+      taxon(name: "pseudomonas aeruginosa") {
+        name
+        parent
+        key
+        sequence(uid: key) {
+            uid
+            seq
+        }
+      }
+    }
+'''
+
+# https://stackoverflow.com/questions/39732223/graphql-pass-args-to-sub-resolve
+# https://stackoverflow.com/questions/44159753/java-graphql-pass-field-values-to-resolver-for-objects
+
+'''
+An AbstractType contains fields that can be shared among graphene.ObjectType,
+graphene.Interface, graphene.InputObjectType or other graphene.AbstractType.
+-- http://docs.graphene-python.org/en/latest/types/abstracttypes/
+
+InputFields are used in mutations to allow nested input data for mutations
+-- http://docs.graphene-python.org/en/latest/types/mutations/
+
+{
+  me {
+    name
+    bestFriend {
+      name
+    }
+    friends(first: 5) {
+      name
+      bestFriend {
+        name
+      }
+    }
+  }
+}
+
+http://docs.graphene-python.org/en/latest/execution/dataloader/
+
+https://github.com/graphql-python/graphene/tree/master/graphene/types/tests
+'''
