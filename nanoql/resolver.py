@@ -23,3 +23,24 @@ def resolve_sequence(self, args, context, info):
 
     # we could now turn this result into biopython sequence objects
     return Sequence(uid=args['uid'], seq=records) # result.text
+
+
+def resolve_taxon(self, args, context, info):
+    from io import StringIO
+    import requests
+    from Bio import SeqIO
+    import untangle
+    from nanoql.objects import Taxon
+    from nanoql.utils import url_base, url_append, sanitize_keys, camel_to_snake
+
+    print('We want to query', context['db'] + '.')
+
+    prefix = args['name']
+    params = {'display': 'xml'}
+    url = url_base('taxon') + url_append(params, prefix=args['name'])
+    result = requests.get(url).text
+    obj = untangle.parse(result)
+
+    return Taxon(
+        uid=obj.ROOT.taxon['taxId'],
+        name=obj.ROOT.taxon['scientificName'])

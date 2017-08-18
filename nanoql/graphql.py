@@ -2,6 +2,12 @@
 The resolver usually sits in the server. But since we wrap the REST API to prove a
 point, we "cheat" and put the resolver on the client side. But this explains, why
 the resolver will not return implicit objects, bc/ it is meant to send JSON.
+
+tiers in ENA
+
+- reads
+- assembly
+- annotation
 '''
 
 # TODO: http://docs.graphene-python.org/en/latest/execution/dataloader/
@@ -18,8 +24,8 @@ import requests
 
 
 class Query(graphene.ObjectType):
-    from nanoql.objects import Sequence
-    from nanoql.resolver import resolve_sequence
+    from nanoql.objects import Sequence, Taxon
+    from nanoql.resolver import resolve_sequence, resolve_taxon
     #  GraphQL fields are designed to be stand-alone functions. --
     # http://docs.graphene-python.org/en/latest/execution/dataloader/
     sequence = graphene.Field(
@@ -37,7 +43,10 @@ class Query(graphene.ObjectType):
     # stackoverflow, 42142046.
     # Alternatively, pass an graphene.InputObjectType, like GeoInput() here:
     # https://github.com/graphql-python/graphene/blob/master/examples/complex_example.py
-
+    taxon = graphene.Field(Taxon,
+        uid=graphene.String(),
+        name=graphene.String(),
+        resolver=resolve_taxon)
 
 schema = graphene.Schema(query=Query)
 params = {'keys': ["KC790375", "KC790376", "KC790377", "KC790378"]}
@@ -63,8 +72,16 @@ print(json.dumps(dict(e.data['sequence']), indent=2))
 # as a nice use case
 # another use case: get
 
-
-
-- reads
-- assembly
-- annotation
+schema = graphene.Schema(query=Query)
+query = '''
+    query {
+      taxon(name: "pseudomonas aeruginosa") {
+        uid
+        name
+        parent
+        children
+      }
+    }
+'''
+e = schema.execute(query, context_value={'db': 'genbank'})
+e.data, e.errors, e.invalid
