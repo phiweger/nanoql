@@ -8,6 +8,12 @@ tiers in ENA
 - reads
 - assembly
 - annotation
+
+https://www.ncbi.nlm.nih.gov/books/NBK25498/#chapter3.Application_4_Finding_unique_se
+https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_EPost_
+https://www.ncbi.nlm.nih.gov/books/NBK25497/
+
+examples: https://github.com/graphql-python/swapi-graphene
 '''
 
 # TODO: http://docs.graphene-python.org/en/latest/execution/dataloader/
@@ -54,7 +60,7 @@ schema = graphene.Schema(query=Query)
 params = {'keys': ["KC790375", "KC790376", "KC790377", "KC790378"]}
 query = '''
     query ($keys: [String]) {
-      sequence(uid: $keys, max: 5) {
+      sequence(uid: $keys, max: 3) {
         uid
         seq
       }
@@ -80,19 +86,23 @@ query = '''
         uid
         name
         parent
+        children
       }
     }
 '''
 e = schema.execute(query, context_value={'db': 'genbank'})
 e.data, e.errors, e.invalid
 
+
+# TODO: write test
+
+
 # TODO:
 # pass result of one query to the next, e.g.
 query = '''
     query {
       taxon(name: "pseudomonas aeruginosa") {
-        sequence(accession: uid) {
-            accession
+        sequence(uid: uid) {
             seq
         }
         name
@@ -100,3 +110,6 @@ query = '''
       }
     }
 '''
+e = schema.execute(query, context_value={'db': 'genbank'})
+e.data, e.errors, e.invalid
+# graphql.error.base.GraphQLError('Cannot query field "sequence" on type "Taxon".')

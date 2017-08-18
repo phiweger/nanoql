@@ -9,3 +9,4 @@ class Taxon(graphene.ObjectType):
     name = graphene.String()
     parent = graphene.String()
     children = graphene.List(graphene.Int)
+    sequence = Sequence()
