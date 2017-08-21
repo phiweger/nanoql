@@ -30,7 +30,7 @@ import requests
 
 
 class Query(graphene.ObjectType):
-    from nanoql.objects import Sequence, Taxon
+    from nanoql.objects import Sequence, InputSequence, Taxon
     from nanoql.resolver import resolve_sequence, resolve_taxon
     #  GraphQL fields are designed to be stand-alone functions. --
     # http://docs.graphene-python.org/en/latest/execution/dataloader/
@@ -52,6 +52,7 @@ class Query(graphene.ObjectType):
     taxon = graphene.Field(Taxon,
         uid=graphene.String(),
         name=graphene.String(),
+        sequence=InputSequence(),
         resolver=resolve_taxon)
 
 
@@ -77,13 +78,14 @@ print(json.dumps(dict(e.data['sequence']), indent=2))
 
 # get all the data from: http://www.nature.com/nature/journal/v540/n7634/full/nature20167.html#accessions
 # as a nice use case
-# another use case: get
+# another use case: get pseudomonas pangenome
+# another: all influenza data for deep learning
 
 schema = graphene.Schema(query=Query)
 query = '''
     query {
       taxon(name: "pseudomonas aeruginosa") {
-        uid
+        taxid
         name
         parent
         children
@@ -94,21 +96,26 @@ e = schema.execute(query, context_value={'db': 'genbank'})
 e.data, e.errors, e.invalid
 
 
-# TODO: write test
+# ------------------------------------------------------------------------------
+# Below does not work.
+
+# Maybe first should be resolve gff file an get e.g. only annotation.
 
 
-# TODO:
-# pass result of one query to the next, e.g.
 schema = graphene.Schema(query=Query)
 query = '''
     query {
       taxon(name: "pseudomonas aeruginosa") {
-        sequence(uid: "KC790375") {
-            uid
-            seq
-        }
+        taxid
         name
         parent
+        children {
+          taxid
+          sequence {  # resolver should return sequence object?
+            seq
+            host
+          }
+        }
       }
     }
 '''
@@ -117,20 +124,37 @@ e.data, e.errors, e.invalid
 # graphql.error.base.GraphQLError('Cannot query field "sequence" on type "Taxon".')
 
 
+'''
+"Note that Input and Output data have different types by design (as reflected in the GraphQL spec), so you can't use a ObjectType as input."
+- https://github.com/graphql-python/graphene/issues/431
+- therein mentioned playground example
+
+basically, we have to get tax info from query and separately seq info using the same
+query (like pseudomonas aeruginosa), then the two canbe "joined" in the query
+'''
+
+
+
+
+
 # TODO: pass one argument to the next nesting
 query = '''
     query {
       taxon(name: "pseudomonas aeruginosa") {
         name
         parent
-        key
-        sequence(uid: key) {
-            uid
-            seq
+          sequence {  # uid gets inferred from parent ID?
+              uid
+              seq
+        }
+        assembly(...) {
+        ...
         }
       }
     }
 '''
+
+# here parent basically mimicks query
 
 # https://stackoverflow.com/questions/39732223/graphql-pass-args-to-sub-resolve
 # https://stackoverflow.com/questions/44159753/java-graphql-pass-field-values-to-resolver-for-objects
@@ -160,5 +184,22 @@ InputFields are used in mutations to allow nested input data for mutations
 
 http://docs.graphene-python.org/en/latest/execution/dataloader/
 
+
+
 https://github.com/graphql-python/graphene/tree/master/graphene/types/tests
+
+"How to access arguments from higher levels"
+https://github.com/graphql-python/graphene/issues/378
+
+"How to access parent field parameters within child resolver"
+https://github.com/graphql-python/graphene/issues/510
+
+lambda
+https://github.com/graphql-python/graphene/issues/461
+
+json
+https://github.com/graphql-python/graphene/issues/384
+
+self, root -- difference?
+https://github.com/graphql-python/graphene/issues/278
 '''

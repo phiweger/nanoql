@@ -4,6 +4,8 @@ DO NOT USE YET, WORK IN PROGRESS (2017-08-18).
 
 NCBI sucks. ENA is better, but is still enoying and sparsely documented. That's where nanoql comes in. It is a domain-specific (mini) language to query these databases based on the GraphQL API spec.
 
+The ["why"](https://www.youtube.com/watch?v=ND9GWSkbUGM) of GraphQL.
+
 ```
 query(db: "ena", uid: 12345) {
     info {

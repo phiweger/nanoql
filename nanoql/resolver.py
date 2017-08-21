@@ -45,7 +45,7 @@ def resolve_taxon(self, args, context, info):
     d = xmltodict.parse(result)
 
     return Taxon(
-        uid=d['ROOT']['taxon']['@taxId'],
+        taxid=d['ROOT']['taxon']['@taxId'],
         name=d['ROOT']['taxon']['@scientificName'],
         parent=d['ROOT']['taxon']['@parentTaxId'],
         children=[i['@taxId'] for i in d['ROOT']['taxon']['children']['taxon']])
