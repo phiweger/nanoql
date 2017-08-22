@@ -1,3 +1,5 @@
+# http://docs.graphene-python.org/projects/sqlalchemy/en/latest/tutorial/
+
 # flask_sqlalchemy/app.py
 from flask import Flask
 from flask_graphql import GraphQLView
