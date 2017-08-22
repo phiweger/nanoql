@@ -22,6 +22,18 @@ query(db: "ena", uid: 12345) {
 }
 ```
 
+### Live demo
+
+```bash
+pip install flask
+pip install flask_graphql
+
+python ~/repos/nanoql/nanoql/app.py
+# direct browser to http://localhost:5000/graphql
+```
+
+make sure no file in the nanoql/nanoql folder is named "graphql.py", see [here](https://github.com/graphql-python/graphene-django/issues/108)
+
 ### Install
 
 tested Python3.6

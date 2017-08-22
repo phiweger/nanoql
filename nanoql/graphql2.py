@@ -8,6 +8,7 @@ from graphene import InputObjectType, ObjectType, String, ID, Field, List
 
 
 class Sequence(ObjectType):
+    '''Gets passed a dict (from e.g. InputSequence object).'''
     seqid = ID()
     seq = String()
 
@@ -15,7 +16,10 @@ class Sequence(ObjectType):
         return int(self.get('seqid')[-1]) + 1
 
     def resolve_seq(self, args, context, info):
-        return self.get('seq')
+        from nanoql.restapi import fetch_uid, fmt_fasta
+        result = fetch_uid(uid=self.get('seqid'), context='ncbi')
+        _, seq = next(fmt_fasta(result))
+        return seq
 
 
 class Sequence2(ObjectType):
@@ -75,7 +79,7 @@ class Query(ObjectType):
     )
 
     def resolve_sequence(self, args, context, info):
-        return {"seqid": args['seqid'], "seq": args['seq']}
+        return {"seqid": args['seqid']}
 
 schema = graphene.Schema(query=Query)
 
