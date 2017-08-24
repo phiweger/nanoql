@@ -40,9 +40,10 @@ class InputLineage(InputObjectType, LineageFields):
 
 
 class TaxonFields(AbstractType):
-    name = String()
+    name = String(description='Scientific name, see ICTV.')
     lineage = Field(Lineage)
     children = List(lambda: Taxon)
+    description = 'Lalalalal'
     # graphene issue 110, 436, 522
     # graphene-sqlalchemy issue 18
 
@@ -67,9 +68,10 @@ class InputTaxon(InputObjectType, TaxonFields):
 
 
 class Query(ObjectType):
-    taxon = List(
+    taxon = List(  # do we need a list?
         Taxon,
-        name=String(),
+        description='Description of the entire class',
+        name=String(description='What does this field do?'),
         lineage=InputLineage(),
         children=List(InputTaxon)   # recursive objects, graphene issue 110
         )
