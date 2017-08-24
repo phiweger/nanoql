@@ -1,19 +1,49 @@
-import json
-import graphene
-from graphene import AbstractType, InputObjectType, ObjectType, String, ID, Field, List
+'''
+Use case: Given a list of accession ids, get both taxonomic info and sequence info from it. Sequence can be raw reads, assembly (curation level 1) or annotation (curation level 2).
 
+https://stackoverflow.com/questions/39381436/graphql-django-resolve-queries-using-raw-postgresql-query
+
+https://github.com/graphql-python/graphene/issues/462
+https://github.com/graphql-python/graphene/issues/431
+'''
+
+
+import json
+
+import graphene
+from graphene import AbstractType, InputObjectType, ObjectType
+from graphene import Int, String, ID, Field, List
 
 
 class LineageFields(AbstractType):
+    cls = String()
+    order = String()
+    phylum = String()
+    subphylum = String()
+    suborder = String()
+    superkingdom = String()
     family = String()
-    genus = String()
 
     def resolve_family(self, args, context, info):
-        return self.get('family')
+        return self.get('family')#
 
-    def resolve_genus(self, args, context, info):
-        return self.get('genus')
+    def resolve_cls(self, args, context, info):
+        return self.get('class')
 
+    def resolve_order(self, args, context, info):
+        return self.get('order')
+
+    def resolve_phylum(self, args, context, info):
+        return self.get('phylum')
+
+    def resolve_suborder(self, args, context, info):
+        return self.get('suborder')
+
+    def resolve_subphylum(self, args, context, info):
+        return self.get('subphylum')
+
+    def resolve_superkingdom(self, args, context, info):
+        return self.get('superkingdom')
 
 class Lineage(ObjectType, LineageFields):
     pass
@@ -40,15 +70,19 @@ class InputLineage(InputObjectType, LineageFields):
 
 
 class TaxonFields(AbstractType):
-    name = String(description='Scientific name, see ICTV.')
+    name = String()
+    taxid = ID()  # description='Unique taxonomic identifier.'
     lineage = Field(Lineage)
     children = List(lambda: Taxon)
-    description = 'Lalalalal'
+    description = 'Taxonomic information.'
     # graphene issue 110, 436, 522
     # graphene-sqlalchemy issue 18
 
     def resolve_name(self, args, context, info):
         return self.get('name')
+
+    def resolve_taxid(self, args, context, info):
+        return self.get('taxid')
 
     def resolve_lineage(self, args, context, info):
         return self.get('lineage')
@@ -70,88 +104,53 @@ class InputTaxon(InputObjectType, TaxonFields):
 class Query(ObjectType):
     taxon = List(  # do we need a list?
         Taxon,
+        # all the following are arguments, i.e. in the query: taxon(<arguments>){...}
         description='Description of the entire class',
-        name=String(description='What does this field do?'),
-        lineage=InputLineage(),
-        children=List(InputTaxon)   # recursive objects, graphene issue 110
+        key=ID(
+            description='(Synonymous/ approximate) name or NCBI ID of taxon.',
+            default_value=42),
+        n_children=Int(
+            description='The number of children to return.',
+            default_value=2)
         )
 
     def resolve_taxon(self, args, context, info):
+        '''Resolve taxon and take into consideration which fields are asked for.'''
+        from nanoql.utils import get_selection_fields
+        from nanoql.restapi import fetch_taxon, fmt_taxon
+
+        # use to distinguish which API to call (just taxon info or sequence)
+        result = fmt_taxon(
+            fetch_taxon(args['key'], fields=get_selection_fields(info)))
         # use taxid to fetch result from ENA/ GenBank
         # distribute info accross subfields
         # i.e. the meat of all the queries goes here, same for sequences etc.
         # the code below just "distributes" the information among the API fields
         return [dict(
-            name=args['name'],
+            name=result.name,
+            taxid=result.taxid,
             # name='pseudomonas',
-            lineage=args['lineage'],
+            lineage=result.lineage,  # args['lineage']
             # lineage={'family': 'a', 'genus': 'b'}  # lineage returns 0
-            children=[{'name': 'c'}, {'name': 'd'}]
+            children=result.children[:args['n_children']]
             )]
 
-schema = graphene.Schema(query=Query)
+schema = graphene.Schema(query=Query, auto_camelcase=False)
 
 '''
-query {
-  taxon(name: "pseudomonas", lineage: {family: "a", genus: "b"}) {
-    name
+{
+  taxon(key: "pseudomonas aeruginosa", n_children: 2) {
+    taxid
     lineage {
-      genus
+      family
+      order
+      cls
     }
     children {
       name
+      taxid
     }
   }
-}
-
-
-query {
-  taxon(name: "pseudomonas") {
-    name
-    lineage {
-      family,
-      genus
-    }
-    children
-  }
-}
-'''
-
-'''
-query {
-  taxon(name: "pseudomonas", lineage: {family: "a", genus: "b"}) {
-    name
-    lineage {
-      family
-      genus
-    }
-  }
-}
-'''
-
-
-'''
-query(...) {
-    assembly {
-        contigs
-        metadata
-    }
-    reads {
-        sra_id
-    }
-    taxon {
-        taxid
-        name
-        parent
-        children {
-            taxid
-            name
-        }
-        lineage {
-            family
-            genus
-        }
-    }
 }
 '''
 

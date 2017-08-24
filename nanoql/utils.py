@@ -1,3 +1,25 @@
+def get_selection_fields(info):
+    '''Get all fields that are part of the (first-level) query.'''
+    # Is a certain field present?
+    # https://github.com/graphql-python/graphene/issues/462
+    # https://github.com/graphql-python/graphene/issues/431
+    sub_fields = []
+    for field in info.field_asts:
+        for selection in field.selection_set.selections:
+            sub_fields.append(selection.name.value)
+    return sub_fields
+
+
+# https://gist.github.com/href/1319371
+def convert_to_obj(dictionary, name='GenericDict'):
+    '''Convert a dict into a named tuple object.'''
+    from collections import namedtuple
+
+    NT = namedtuple(name, dictionary.keys())
+    gen_dict = NT(**dictionary)
+    return gen_dict
+
+
 def url_base(key):
     '''Return base urls.
 
