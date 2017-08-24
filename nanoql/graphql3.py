@@ -52,31 +52,15 @@ class InputLineage(InputObjectType, LineageFields):
     pass
 
 
-# class ChildFields(AbstractType):
-#     taxid = ID()
-#     seq = String()
-#
-#     def resolve_taxid(self, args, context, info):
-#         return self.get('taxid')
-#
-#     def resolve_seq(self, args, context, info):
-#         return self.get('seq')
-#
-# class Child(ObjectType, ChildFields):
-#     pass
-#
-# class InputChild(InputObjectType, ChildFields):
-#     pass
-
-
 class TaxonFields(AbstractType):
     name = String()
     taxid = ID()  # description='Unique taxonomic identifier.'
     lineage = Field(Lineage)
     children = List(lambda: Taxon)
     description = 'Taxonomic information.'
-    # graphene issue 110, 436, 522
-    # graphene-sqlalchemy issue 18
+    # use of lambda prevents circular import errors
+    # see graphene issues 110, 436, 522
+    # and graphene-sqlalchemy issue 18
 
     def resolve_name(self, args, context, info):
         return self.get('name')
