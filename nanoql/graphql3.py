@@ -16,7 +16,7 @@ from graphene import Int, String, ID, Field, List
 
 
 class LineageFields(AbstractType):
-    cls = String()
+    cls = String()  # "class" as field name conflict with python, i.e. reserved keyword
     order = String()
     phylum = String()
     subphylum = String()
@@ -129,6 +129,23 @@ schema = graphene.Schema(query=Query, auto_camelcase=False)
       family
       order
       cls
+    }
+    children {
+      name
+      taxid
+    }
+  }
+}
+
+{
+  taxon(key: "Pseudomonas aeruginosa 2192", n_children: 4) {
+    taxid
+    name
+    lineage {
+      family
+      order
+      cls
+      phylum
     }
     children {
       name

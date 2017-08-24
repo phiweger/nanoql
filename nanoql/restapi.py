@@ -92,15 +92,18 @@ def fmt_taxon(result):
     # del lineage['class']  # just for now, has name conflicts w/ python
 
     children = []
-    for i in d['ROOT']['taxon']['children']['taxon']:
-        try:
-            children.append({
-                'taxid': i['@taxId'],
-                'name': i['@scientificName']
-                })
-        except KeyError:
-            pass
-
+    try:
+        ch = d['ROOT']['taxon']['children']['taxon']
+        for i in ch:
+            try:
+                children.append({
+                    'taxid': i['@taxId'],
+                    'name': i['@scientificName']
+                    })
+            except KeyError:  # certain lineage categories not present
+                pass
+    except KeyError:  # no children for query
+        pass
 
     return convert_to_obj({
         'taxid': d['ROOT']['taxon']['@taxId'],                # taxid
