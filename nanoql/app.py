@@ -5,7 +5,7 @@ from flask import Flask
 from flask_graphql import GraphQLView
 
 # from models import db_session
-from graphql2 import schema
+from graphql3 import schema
 
 app = Flask(__name__)
 app.debug = True
