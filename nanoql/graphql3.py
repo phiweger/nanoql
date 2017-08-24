@@ -95,7 +95,7 @@ class Query(ObjectType):
             default_value=42),
         n_children=Int(
             description='The number of children to return.',
-            default_value=2)
+            default_value=int(1e6))  # basically "all"
         )
 
     def resolve_taxon(self, args, context, info):
