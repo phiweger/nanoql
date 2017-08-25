@@ -1,3 +1,4 @@
+# TODO make ENA version of this, NCBI should be only fallback
 def fetch_uid(uid=None, name='', context=None, max_n_records=None):
     '''Fetch sequence data from <context>.
 
@@ -82,6 +83,8 @@ def fmt_taxon(result):
 
     d = xmltodict.parse(result)
 
+    # TODO: if empty, return possible results from approximate search
+
     lineage = defaultdict(dict)  # a dict of dicts
     for i in d['ROOT']['taxon']['lineage']['taxon']:
         try:
@@ -111,4 +114,32 @@ def fmt_taxon(result):
         'parent': d['ROOT']['taxon']['@parentTaxId'],         # parent taxid
         'children': children,
         'lineage': lineage
+        # TODO: return search url for debugging
         }, name='ResultTaxon')
+
+
+def taxon_stats(taxid):
+    '''Get a table of search results and the associated ENA portal for a given taxid.
+
+    Returns a json string.
+
+    Example:
+
+    >>> taxon_stats(287)
+    '{"noncoding_release":50194,"coding_update":804503,...}'
+    '''
+    from io import StringIO
+    import json
+    import requests
+    import pandas as pd
+
+    header = 'taxon taxon_bases descendants descendants_bases'.split(' ')
+
+    url = 'http://www.ebi.ac.uk/ena/data/stats/taxonomy/' + str(taxid)
+    result = pd.read_csv(
+        StringIO(requests.get(url).text),
+        sep='\t\t\t',  # OMFG, really? Triple tab?
+        engine='python',
+        index_col=0)
+    result.columns = header
+    return result['taxon'].to_json(force_ascii=False)

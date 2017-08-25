@@ -57,6 +57,7 @@ class TaxonFields(AbstractType):
     taxid = ID()  # description='Unique taxonomic identifier.'
     lineage = Field(Lineage)
     children = List(lambda: Taxon)
+    stats = String()
     description = 'Taxonomic information.'
     # use of lambda prevents circular import errors
     # see graphene issues 110, 436, 522
@@ -73,6 +74,9 @@ class TaxonFields(AbstractType):
 
     def resolve_children(self, args, context, info):
         return self.get('children')
+
+    def resolve_stats(self, args, context, info):
+        return self.get('stats')
 
 class Taxon(ObjectType, TaxonFields):
     pass
@@ -101,22 +105,29 @@ class Query(ObjectType):
     def resolve_taxon(self, args, context, info):
         '''Resolve taxon and take into consideration which fields are asked for.'''
         from nanoql.utils import get_selection_fields
-        from nanoql.restapi import fetch_taxon, fmt_taxon
+        from nanoql.api_ena import fetch_taxon, fmt_taxon, taxon_stats
 
         # use to distinguish which API to call (just taxon info or sequence)
+        fields = get_selection_fields(info)
         result = fmt_taxon(
-            fetch_taxon(args['key'], fields=get_selection_fields(info)))
+            fetch_taxon(args['key'], fields=fields))
         # use taxid to fetch result from ENA/ GenBank
         # distribute info accross subfields
         # i.e. the meat of all the queries goes here, same for sequences etc.
         # the code below just "distributes" the information among the API fields
+
+        stats = [taxon_stats(result.taxid) if 'stats' in fields else None]
+        # TODO: if "stats" in fields, return query
+        # http://www.ebi.ac.uk/ena/data/stats/taxonomy/2759
+
         return [dict(
             name=result.name,
             taxid=result.taxid,
             # name='pseudomonas',
             lineage=result.lineage,  # args['lineage']
             # lineage={'family': 'a', 'genus': 'b'}  # lineage returns 0
-            children=result.children[:args['n_children']]
+            children=result.children[:args['n_children']],
+            stats=stats
             )]
 
 schema = graphene.Schema(query=Query, auto_camelcase=False)
@@ -129,23 +140,6 @@ schema = graphene.Schema(query=Query, auto_camelcase=False)
       family
       order
       cls
-    }
-    children {
-      name
-      taxid
-    }
-  }
-}
-
-{
-  taxon(key: "Pseudomonas aeruginosa 2192", n_children: 4) {
-    taxid
-    name
-    lineage {
-      family
-      order
-      cls
-      phylum
     }
     children {
       name
