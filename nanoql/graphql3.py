@@ -134,17 +134,35 @@ schema = graphene.Schema(query=Query, auto_camelcase=False)
 
 '''
 {
-  taxon(key: "pseudomonas aeruginosa", n_children: 2) {
+  taxon(key: "Pseudomonas aeruginosa", n_children: 4) {
     taxid
+    stats
+    name
     lineage {
       family
       order
       cls
+      phylum
     }
     children {
       name
       taxid
     }
+  }
+}
+
+
+{
+  taxon(key: 287) {
+    stats
+  }
+}
+
+
+# nice error messages
+{
+  taxon(key: 278) {
+    stats
   }
 }
 '''
