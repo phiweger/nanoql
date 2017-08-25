@@ -11,6 +11,7 @@ The ["why"](https://www.youtube.com/watch?v=ND9GWSkbUGM) of GraphQL:
 - one endpoint to query multiple databases with the same syntax
 - if changes occur to the databases' schemas, the queries you do stay syntactically the same
 - if new fields are added to nanoql's API, the old queries are still valid
+- it is self-documenting, i.e. the schema describes itself (see the live demo below): no more clicking around in search of those fields you were looking for
 
 Example queries:
 
