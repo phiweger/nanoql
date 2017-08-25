@@ -18,8 +18,6 @@ def fetch_taxon(key=None, fields=None):
     # to retrieve associated sequences
     params = {'display': 'xml'}
     url = url_base('taxon') + url_append(params, prefix=key)
-    print(url)
-    print(type(key))
     # http://www.ebi.ac.uk/ena/data/view/Taxon:2759 or
     # http://www.ebi.ac.uk/ena/data/view/2759 -- both works
     result = requests.get(url).text
@@ -45,7 +43,7 @@ def fmt_taxon(result):
         d['ROOT']['taxon']
     except KeyError:
         raise KeyError(
-            'Error during request with url [...]' + d['ROOT']['@request'], d['ROOT']['#text']) 
+            'Error during request with url [...]' + d['ROOT']['@request'], d['ROOT']['#text'])
 
     lineage = defaultdict(dict)  # a dict of dicts
     try:
