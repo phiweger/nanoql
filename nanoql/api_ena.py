@@ -107,3 +107,28 @@ def taxon_stats(taxid):
         index_col=0)
     result.columns = header
     return result['taxon'].to_json(force_ascii=False)
+
+
+def fetch_sequence(key=[], fmt='fasta'):
+    '''Given a sequence ID (accession number), fetch the source in <format>.
+
+    TODO:
+
+    - rate limit?
+    - parallel execution
+    '''
+    import requests
+    from nanoql.utils import url_base, url_append
+
+    # get information on the taxon
+
+    # if not 'children' in fields: # we can use the nice taxon API at
+    #     base = 'http://www.ebi.ac.uk/ena/browse/taxon/v1/'
+
+    # to retrieve associated sequences
+    params = {'display': fmt}
+    url = url_base('retrieve') + url_append(params, prefix=','.join(key))
+    # http://www.ebi.ac.uk/ena/data/view/Taxon:2759 or
+    # http://www.ebi.ac.uk/ena/data/view/2759 -- both works
+    result = requests.get(url).text
+    return result

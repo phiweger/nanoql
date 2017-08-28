@@ -63,7 +63,7 @@ class TaxonFields(AbstractType):
     name = String()
     taxid = ID()  # description='Unique taxonomic identifier.'
     lineage = Field(Lineage)
-    children = List(lambda: Taxon)
+    children = List(lambda: Taxon)  # see comment below
     stats = String()
     description = 'Taxonomic information.'
     # use of lambda prevents circular import errors

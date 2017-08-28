@@ -14,7 +14,7 @@ from graphene import Int, String, ID, Field, List
 from nanoql.fields import Lineage, InputLineage
 from nanoql.fields import Taxon, InputTaxon
 from nanoql.fields import Sequence, InputSequence
-from nanoql.resolver import resolve_taxon
+from nanoql.resolver import resolve_taxon, resolve_sequence
 
 
 class Query(ObjectType):
@@ -30,6 +30,14 @@ class Query(ObjectType):
             default_value=int(1e6)),  # basically "all"
         resolver=resolve_taxon)
 
+    sequence = List(
+        Sequence,
+        description='Sequence field.',
+        seqid=List(
+            ID,
+            description='A list of sequence accession IDs.',
+            required=True),
+        resolver=resolve_sequence)
 
 schema = Schema(query=Query, auto_camelcase=False)
 
@@ -65,6 +73,13 @@ schema = Schema(query=Query, auto_camelcase=False)
 {
   taxon(key: 278) {
     stats
+  }
+}
+
+{
+  sequence(seqid: ["AACH01000026", "AACH01000027"]) {
+    seqid
+    seq
   }
 }
 '''

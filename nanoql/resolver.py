@@ -26,6 +26,34 @@ def resolve_taxon(self, args, context, info):
         stats=stats
         )]
 
+
+def resolve_sequence(self, args, context, info):
+    '''Resolve taxon and take into consideration which fields are asked for.'''
+    from io import StringIO
+    from Bio import SeqIO
+    from nanoql.api_ena import fetch_sequence
+
+    # fetch all sequences
+    result = fetch_sequence(args['seqid'])
+    g = SeqIO.parse(StringIO(result), format='fasta')
+    # TODO: turn this into fmt_sequence(..., fmt='fasta')
+
+    return [dict(
+        seq=str(i.seq)[:15],
+        seqid=i.description
+        ) for i in g]
+
+
+# http://www.ebi.ac.uk/ena/submit/sequence-format
+# "flat file" seems to be Genebank format
+
+# FTP
+# http://www.ebi.ac.uk/ena/browse/download
+# http://www.ebi.ac.uk/ena/browse/sequence-download
+
+
+
+
 # # TODO: separate the requests routines from the resolver. the latter should just choose
 # # one based on the context
 #
