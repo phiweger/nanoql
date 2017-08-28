@@ -82,6 +82,13 @@ Try these queries if you like:
   }
 }
 
+# get fasta-like information for a list of accession IDs
+{
+  sequence(seqid: ["AACH01000026", "AACH01000027"]) {
+    seqid
+    seq
+  }
+}
 
 # nice error messages
 {
