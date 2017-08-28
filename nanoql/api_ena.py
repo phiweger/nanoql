@@ -119,16 +119,20 @@ def fetch_sequence(key=[], fmt='fasta'):
     nanoql explore
     nanoql fetch --query query.ql --args args.json --out all_viruses.fasta
 
-    - rate limit?
+    - rate limit? see comments below
     - parallel execution? see:
         - https://pawelmhm.github.io/asyncio/python/aiohttp/2016/04/22/asyncio-aiohttp.html
+        - http://terriblecode.com/blog/asynchronous-http-requests-in-python/
+        - https://github.com/kennethreitz/grequests
+        - https://github.com/ross/requests-futures
         - in golang?: https://gist.github.com/mattetti/3798173
         - use all viral sequences and benchmark
     - displax text (flat file, genbank format):
         - http://www.ebi.ac.uk/ena/data/view/AACH01000027%26display%3Dtext
+    - if nothing found for a str in the accession number list, say so
     '''
     import requests
-    from nanoql.utils import url_base, url_append
+    from nanoql.utils import url_base, url_append, chunks
 
     # get information on the taxon
 
@@ -137,8 +141,9 @@ def fetch_sequence(key=[], fmt='fasta'):
 
     # to retrieve associated sequences
 
-    # split sequences into chunks
+    # split sequences into chunks of length 1000
     # get async
+
 
     params = {'display': fmt}
     url = url_base('retrieve') + url_append(params, prefix=','.join(key))
@@ -146,3 +151,11 @@ def fetch_sequence(key=[], fmt='fasta'):
     # http://www.ebi.ac.uk/ena/data/view/2759 -- both works
     result = requests.get(url).text
     return result
+
+
+# http://www.ebi.ac.uk/ena/browse/data-retrieval-rest#pagination_options
+# There is an additional limit parameter which is used to safe-guard the system and the user from unintentional download of millions of sequences. The limit sets the maximum number of records that can be downloaded and if not set will default to 100,000. To increase the maximum, set the limit to a larger number, for example:
+# http://www.ebi.ac.uk/ena/data/view/CEQY01000001-CEQY01396425&display=fasta&download=gzip&limit=400000
+#
+# We advise that you increase the limit with caution.  Downloading very large numbers of very large sequences can result in more problems than downloading your set in batches, especially if you have a slower network connection.
+
