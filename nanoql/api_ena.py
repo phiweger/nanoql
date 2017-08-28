@@ -114,8 +114,18 @@ def fetch_sequence(key=[], fmt='fasta'):
 
     TODO:
 
+    - need CLI interface
+
+    nanoql explore
+    nanoql fetch --query query.ql --args args.json --out all_viruses.fasta
+
     - rate limit?
-    - parallel execution
+    - parallel execution? see:
+        - https://pawelmhm.github.io/asyncio/python/aiohttp/2016/04/22/asyncio-aiohttp.html
+        - in golang?: https://gist.github.com/mattetti/3798173
+        - use all viral sequences and benchmark
+    - displax text (flat file, genbank format):
+        - http://www.ebi.ac.uk/ena/data/view/AACH01000027%26display%3Dtext
     '''
     import requests
     from nanoql.utils import url_base, url_append
@@ -126,6 +136,10 @@ def fetch_sequence(key=[], fmt='fasta'):
     #     base = 'http://www.ebi.ac.uk/ena/browse/taxon/v1/'
 
     # to retrieve associated sequences
+
+    # split sequences into chunks
+    # get async
+
     params = {'display': fmt}
     url = url_base('retrieve') + url_append(params, prefix=','.join(key))
     # http://www.ebi.ac.uk/ena/data/view/Taxon:2759 or

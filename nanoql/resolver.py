@@ -36,7 +36,8 @@ def resolve_sequence(self, args, context, info):
     # fetch all sequences
     result = fetch_sequence(args['seqid'])
     g = SeqIO.parse(StringIO(result), format='fasta')
-    # TODO: turn this into fmt_sequence(..., fmt='fasta')
+    # TODO: turn this into fmt_sequence(..., fmt='fasta') and move to ena_api
+    # i.e. don't muddle the resolver logic by stuff it does not really do
 
     return [dict(
         seq=str(i.seq)[:15],
