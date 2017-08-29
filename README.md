@@ -98,6 +98,13 @@ Try these queries if you like:
 }
 ```
 
+### Components
+
+nanoql really does two things:
+
+- translate a query in GraphQL syntax into the corresponding API call of the target database (wrapper) -- this abstracts all knowledge about the database internals away from the user
+- fetch the result and process it accordingly (checksums, download etc.)
+
 ### Live demo
 
 ```bash
