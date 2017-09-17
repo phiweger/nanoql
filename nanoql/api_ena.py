@@ -1,3 +1,31 @@
+def suggest(name, n=None):
+    '''Find the first <n> searchable taxa starting with <name>.
+
+    Note that ENA only searches for the <name> at the beginning of a group
+    of words, e.g. we could search for "Semliki forest virus" by "semliki"
+    but not "forest virus".
+
+    Example:
+
+    >>> suggest('semliki', 10)
+        [{'displayName': 'Semliki Forest virus',
+        'scientificName': 'Semliki Forest virus',
+        'taxId': '11033'}, ...
+    '''
+    import requests
+
+    url = 'http://www.ebi.ac.uk/ena/data/taxonomy/v1/taxon/suggest-for-search/'
+    url += name
+    if n:
+        # If n not specified, return all results.
+        url += '?limit=' + str(n)
+        r = requests.get(url)
+        if r.status_code == 200:
+            return r.json()
+        else:
+            raise ValueError('Query name not found.')
+
+
 def fetch_taxon(key=None, fields=None):
     '''Given a taxonomic name, fetch scientific name and some taxonomic info.
 
