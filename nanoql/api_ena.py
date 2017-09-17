@@ -16,14 +16,14 @@ def suggest(name, n=None):
 
     url = 'http://www.ebi.ac.uk/ena/data/taxonomy/v1/taxon/suggest-for-search/'
     url += name
-    if n:
-        # If n not specified, return all results.
+    if n:  # If n not specified, return all results.
         url += '?limit=' + str(n)
-        r = requests.get(url)
-        if r.status_code == 200:
-            return r.json()
-        else:
-            raise ValueError('Query name not found.')
+
+    r = requests.get(url)
+    if r.status_code == 200:
+        return r.json()
+    else:
+        raise ValueError('Query name not found.')
 
 
 def fetch_taxon(key=None, fields=None):

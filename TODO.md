@@ -8,6 +8,11 @@ application:
 - select appropriate name and get id of all complete sequences
 - download them to fasta and bed
 
+two stwp process: explore with Graphiql, once satisfied copy query into file and
+fetch data
 
-
-Fetch list of suggested taxa: http://www.ebi.ac.uk/ena/browse/taxonomy-service
+```python
+nanoql explore --port 5000  # starts server
+nanoql fetch --query search.ql --out /path/to/... --fmt fasta --parallel 8
+# get data, i.e. sequences, in e.g. fasta format
+```

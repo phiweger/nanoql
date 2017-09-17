@@ -14,7 +14,7 @@ from graphene import Int, String, ID, Field, List
 from nanoql.fields import Lineage, InputLineage
 from nanoql.fields import Taxon, InputTaxon
 from nanoql.fields import Sequence, InputSequence
-from nanoql.resolver import resolve_taxon, resolve_sequence
+from nanoql.resolver import resolve_taxon, resolve_sequence, resolve_suggest
 
 
 class Query(ObjectType):
@@ -39,9 +39,34 @@ class Query(ObjectType):
             required=True),
         resolver=resolve_sequence)
 
+    suggest = List(
+        Taxon,
+        description='Let ENA suggest possible name matches.',
+        key=ID(
+            description='Taxon name prefix.',
+            default_value='cat'),
+        n_records=Int(
+            description='The number of children to return.',
+            default_value=int(1e6)),  # basically "all"
+        resolver=resolve_suggest)
+
 schema = Schema(query=Query, auto_camelcase=False)
 
+# The next part is wrapped by the app. TODO: How to save it though?
+# query = '''
+#     query {
+#       taxon(name: "pseudomonas aeruginosa") {
+#         taxid
+#         name
+#         parent
+#         children
+#       }
+#     }
+# '''
+# e = schema.execute(query, context_value={'db': 'genbank'})
+# e.data, e.errors, e.invalid
 
+# Some example queries.
 '''
 {
   taxon(key: "Pseudomonas aeruginosa", n_children: 4) {
@@ -82,5 +107,13 @@ schema = Schema(query=Query, auto_camelcase=False)
     seq
   }
 }
+
+{
+  suggest(key: "semliki", n_records: 4) {
+    taxid
+    name
+  }
+}
+# can then be turned into "taxon" quickly
 '''
 

@@ -5,8 +5,8 @@ def resolve_taxon(self, args, context, info):
 
     # use to distinguish which API to call (just taxon info or sequence)
     fields = get_selection_fields(info)
-    result = fmt_taxon(
-        fetch_taxon(args['key'], fields=fields))
+    result = fmt_taxon(fetch_taxon(args['key'], fields=fields))
+    # TODO; I don't use "fields" in this function, rm arg?
     # use taxid to fetch result from ENA/ GenBank
     # distribute info accross subfields
     # i.e. the meat of all the queries goes here, same for sequences etc.
@@ -46,6 +46,17 @@ def resolve_sequence(self, args, context, info):
         seq=str(i.seq)[:15],
         seqid=i.description
         ) for i in g]
+
+
+def resolve_suggest(self, args, context, info):
+    '''Resolve suggestions.'''
+    from nanoql.api_ena import suggest
+
+    records = suggest(args['key'], args['n_records'])
+    return [dict(
+        name=record['scientificName'],
+        taxid=record['taxId']
+    ) for record in records]
 
 
 
