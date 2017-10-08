@@ -115,5 +115,15 @@ schema = Schema(query=Query, auto_camelcase=False)
   }
 }
 # can then be turned into "taxon" quickly
+
+{
+  taxon(key: "alphavirus") {
+    taxid
+    children {
+      name
+      taxid
+    }
+  }
+}
 '''
 
